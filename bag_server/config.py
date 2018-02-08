@@ -14,7 +14,8 @@ class BaseConfig(object):
     CREATE_MINID = True	
     MINID_TEST = True
 
-    BUCKET_NAME = "encode-bags"
+    BUCKET_NAME = ""
+    GLOBUS_EP = ""
 
 class ProdConfig(BaseConfig):
     DEBUG = False
@@ -32,6 +33,6 @@ class ProdConfig(BaseConfig):
     CREATE_MINID = True
     MINID_TEST = True
 
-    BUCKET_NAME = "encode-bags"
-
+    BUCKET_NAME = ""
+    GLOBUS_EP = ""
 

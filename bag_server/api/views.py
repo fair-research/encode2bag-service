@@ -6,7 +6,7 @@ import boto3
 from encode2bag import encode2bag_api as e2b
 from minid_client import minid_client_api as minid_client
 
-GLOBUS_FILE="https://www.globus.org/app/transfer?origin_id=6a84efa0-4a94-11e6-8233-22000b97daec&origin_path=%2Ffdab4915-a1f0-42f1-8579-e1999d0648ca%2F"
+GLOBUS_URL="https://www.globus.org/app/transfer"
 
 def upload_to_s3(filename, key):
     s3 = boto3.resource('s3', aws_access_key_id=app.config['AWS_ACCESS_KEY_ID'], aws_secret_access_key=app.config['AWS_SECRET_ACCESS_KEY'])
@@ -101,5 +101,5 @@ def get_entity():
 
         response_dict["minid"] = minid
 
-    response_dict["globus_uri"] = GLOBUS_FILE
+    response_dict["globus_uri"] = "%s?origin_id=%s&origin_path=%s" % (GLOBUS_URL, app.config['GLOBUS_EP'], key)
     return jsonify(response_dict), 200
