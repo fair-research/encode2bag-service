@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+
+    <title>BDDS: Encode Bag Generation Service</title>
+
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+
+    <!-- Custom styles -->
+    <link href="css/starter-template.css" rel="stylesheet">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+    <script>
+        $( document ).ready(function() {
+                jQuery.ajaxSetup({
+                    beforeSend: function() {
+                        $('#loader').show();
+                    },
+                    complete: function(){
+                        $('#loader').hide();
+                    },
+                    success: function() {}
+                });
+
+                function get_input_json(){
+                    var input_json = {};
+                    if ($("#encode-search-button").hasClass("btn-success")){
+                        input_json['q'] =  $("#search-bar").val();
+                    } else {
+                        input_json['m'] =  $("#full-metadata").val();
+                    }
+                    /*                  
+                    input_json["ro"] = false;
+                    if ($("#ro-checkbox").is(":checked")){
+                        input_json["ro"] = true;
+                    }*/
+                    return input_json;
+                }
+                
+                function create_bdbag(){
+                    var input_json = get_input_json();
+                    $.ajax({
+                        url: "/encode",
+                        method: "POST",
+                        data: JSON.stringify(input_json),
+                        contentType: "application/json",
+                    }).done(function(results) {
+                        $("#results-div").children().remove();
+                        var p;
+                        if (results['uri'].startsWith("https://www.globus.org")){
+                            p = $("<p>", {"class": "lead", "text" : "Transfer exploded BDBag with Globus: "});
+                        } else { 
+                            //p = $("<p>", {"class": "lead", "text" : "Your BDBag is available here: "});
+                            p = $("<p>", {"class": "lead", "text" : "BDBag created: "});
+
+                        }
+                        //var link = $("<a>", {"href": results['uri'], "text" : results['uri']});
+                        var link = $("<a>", {"href": "http://www.n2t.net/" + results['minid'], "text" : results['minid'], "target" : "_blank"});
+
+                        var p2 = $("<p>", {"class": "lead", "text" : "or you can access, transfer, and share the complete, materialized BDBag with "});
+                        var link2 = $("<a>", {"href": results['globus_uri'], "text" : "Globus", "target" : "_blank" });
+                        p2.append(link2);
+                        p.append(link);
+                        $("#results-div").append(p).append(p2);
+                    });
+                }
+                $("#search-button").click(function(){
+                    create_bdbag();
+                });
+                $("#create-button").click(function(){
+                    create_bdbag();    
+                });
+                $('#search-bar').keypress(function(e){
+                    if(e.which == 13){
+                        $('#search-button').click();
+                    }
+                });
+
+                function toggle_button(button, on){
+                    if (on){
+                        button.addClass("btn-success");
+                        button.removeClass("btn-default");
+                    } else {
+                        button.addClass("btn-default");
+                        button.removeClass("btn-success");
+                    }
+                }
+
+                $("#encode-search-button").click(function(){
+                        $("#search-div").show();
+                        $("#metadata-div").hide();
+                        toggle_button($("#encode-search-button"), true);
+                        toggle_button($("#encode-metadata-button"), false);
+                });
+
+                $("#encode-metadata-button").click(function(){
+                        $("#metadata-div").show();
+                        $("#search-div").hide();
+                        toggle_button($("#encode-search-button"), false);
+                        toggle_button($("#encode-metadata-button"), true);
+                });
+
+        });
+    </script>
+
+	<!-- google analytics -->
+  </head>
+
+  <body>
+    <nav class="bdds-navbar navbar navbar-static-top navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="http://bd2k.ini.usc.edu/">
+            <img style="max-width:80px; margin-top: -8px;" src="images/bdds-logo.png">
+          </a>
+        </div>
+        <div class="bdds-brand collapse navbar-collapse">
+          <span class="bdds-big">BIG DATA</span>
+          <span class="bdds-for"> for</span>
+          <span class="bdds-discover"> DISCOVERY SCIENCE</span>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+         <div class="starter-template text-center">
+             <!--<h1>BDDS ENCODE to Bag</h1>-->
+            <p class="lead">Create a BDBag from an ENCODE search.</p>
+            <p>For example enter the following search:</p>
+            <p>https://www.encodeproject.org/search/?type=Experiment&amp;assay_title=RNA-seq&amp;replicates.library.biosample.biosample_type=stem+cell</p>
+            <p>Or paste in an Encode metadata file.</p>
+        </div>
+
+    
+        <div class="col-xs-12" style="height:20px;"></div>
+        <div class="row">
+            <div class="col-xs-12 text-center" style="margin-bottom: 20px;">
+                <div class="btn-group" role="group">
+                      <button type="button" id="encode-search-button" class="btn btn-success">Encode Search Query</button>
+                      <button type="button" id="encode-metadata-button" class="btn btn-default">Encode Metadata File</button>
+                </div>
+            </div>
+            <div class="col-xs-12">
+                <div class="form-group" id="search-div">
+                    <input type="text" class="form-control" id="search-bar" placeholder="Enter your search for encode data ...">
+                    <!--<span class="input-group-btn">
+                        button class="btn btn-default" type="button" id="search-button">Go!</button>
+                    </span>-->
+                </div>
+                <div class="form-group" id="metadata-div" style="display:none;">
+                    <textarea class="form-control" rows="5" id="full-metadata" placeholder="Paste the encode metadata file ..."></textarea>
+                </div>
+                <!--<div class="form-group text-center">
+                    <input type="checkbox" id="ro-checkbox" > Include Research Object Manifest</input>
+                </div>-->
+
+                <div class="form-group text-center">
+                    <button class="btn btn-default" type="button" id="create-button">Create BDBag</input>
+                </div> 
+
+        </div>
+        </div>
+        <div id="loader" class="text-center" style="display:none;"><img src="images/loading.gif"/></div>
+    <div id="results-div" class="starter-template text-center">
+    </div>
+
+    </div><!-- /.container -->
+  </body>
+</html>
+
